@@ -1,92 +1,51 @@
-import { OrbitControls, PerspectiveCamera, Stage, Stats } from "@react-three/drei";
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import React, { useMemo, useRef } from "react";
-import { useControls } from "leva";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Environment, OrbitControls, Stage } from "@react-three/drei";
 import * as THREE from "three";
-import Floor from "./Floor";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import Scene from "./Scene";
+import { useControls } from "leva";
 
-const Scene = () => {
-  const boxRef = useRef();
-  const gltf = useLoader(GLTFLoader, "/gopro_hero/scene.gltf");
-  useFrame(() => {
-    boxRef.current.rotation.y += 0.004;
-    // boxRef.current.rotation.x += 0.004;
-    // boxRef.current.rotation.z += 0.004;
-  });
-
-  const directionalRef = useRef();
-
-  const options = useMemo(() => {
-    return {
-      x: { value: 1, min: -10, max: 10, step: 0.1 },
-      y: { value: 1, min: -10, max: 10, step: 0.1 },
-      z: { value: 1, min: -10, max: 10, step: 0.1 },
-      visible: true,
-      color: { value: "white" },
-    };
-  }, []);
-
-  const pA = useControls("Box position", options);
-  const dL = useControls("Directional Light", {
-    visible: {
-      value: true,
-      onChange: (v) => {
-        directionalRef.current.visible = v;
-      },
-    },
-    position: {
-      x: 1,
-      y: 1,
-      z: 1,
-      onChange: (v) => {
-        directionalRef.current.position.copy(v);
-      },
-    },
-    color: {
-      value: "white",
-      onChange: (v) => {
-        directionalRef.current.color = new THREE.Color(v);
-      },
-    },
-  });
+export default function App() {
+  const modelRef = useRef();
+  const [scale, setScale] = useState(1);
 
   return (
-    <group>
-
-      <Stage preset="rembrandt" intensity={1} environment="city">
-        <primitive
-          object={gltf.scene}
-          position={[pA.x, pA.y, pA.z]}
-          visible={pA.visible}
-          ref={boxRef}
-        />
-      </Stage>
-      {/* <Floor /> */}
-
-      <directionalLight intensity={0.5} ref={directionalRef} color={dL.color} />
-    </group>
-  );
-};
-
-export default function Preview() {
-  return (
-    <Canvas
-      shadows
-      style={{ width: "100%", height: "80vh" }}
-      camera={{ position: [-0.5, 1, 2] }}
-    >
-      <fog />
-      <ambientLight intensity={0.1} />
-      <directionalLight
+    <Canvas flat linear frameloop="demand">
+      <CameraAnimation />
+      <ambientLight intensity={1} />
+      <spotLight
         intensity={0.5}
+        angle={0.1}
+        penumbra={1}
+        position={[10, 15, 10]}
         castShadow
-        shadow-mapSize-height={512}
-        shadow-mapSize-width={512}
       />
-      <OrbitControls />
-      <Scene />
-      <Stats />
+
+      <Suspense fallback={null}>
+        <Stage preset="rembrandt" intensity={7} environment="park">
+          <Scene rotation={[-Math.PI / 2, 0, 0]} />
+        </Stage>
+
+        <OrbitControls />
+      </Suspense>
     </Canvas>
   );
 }
+
+const CameraAnimation = () => {
+  const [started, setStarted] = useState(false);
+  const vec = new THREE.Vector3();
+
+  useEffect(() => {
+    setStarted(true);
+  }, []);
+
+  useFrame((state) => {
+    if (started) {
+      // state.camera.lookAt(0, 2, 0);
+      // state.camera.position.lerp(vec.set(6, 6, -4), 0.008);
+    }
+    return null;
+  });
+  return null;
+};
