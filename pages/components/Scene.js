@@ -13,7 +13,7 @@ export default function Scene(props) {
 
   useThree(({ camera }) => {
     camera.position.y = 50;
-    camera.lookAt(1, 2, 1);
+    camera.lookAt(1, 5, 1);
   });
 
   return (
